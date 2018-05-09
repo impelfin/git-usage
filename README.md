@@ -87,10 +87,10 @@ git rebase -i HEAD~4 // 최신 4개의 커밋을 하나로 합치기
 $ git commit --amend // 마지막 커밋메세지 수정(ref)
 ```
 
-간단한 commit방법
+간단한 commit 방법
 
 ```
-$ git add {변경한 파일병}
+$ git add {변경한 파일명}
 $ git commit -m “{변경 내용}"
 ```
 
