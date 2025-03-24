@@ -1,8 +1,8 @@
 # git-usage
-자주 사용하는 깃 명령어 모음 
 
+자주 사용하는 깃 명령어 모음
 
-## 구조 
+## 구조
 
 코드는 아래 세 단계에 걸쳐 저장된다.
 
@@ -12,7 +12,6 @@
 2. git commit 으로 스테이징 상태에 있는 모든 변경사항을 커밋한다. 여기까지가 로컬에서의 작업
 3. git push 로 커밋된 저장소를 원격 저장소로 밀어넣는다.
 
-
 ## 기본 명령어
 
 저장소 생성
@@ -21,7 +20,7 @@
 git init
 ```
 
-원격 저장소로부터 복제 
+원격 저장소로부터 복제
 
 ```
 git clone {url}
@@ -30,37 +29,37 @@ git clone {url}
 변경 사항 체크
 
 ```
-git status // 
+git status //
 ```
 
 특정 파일 스테이징
 
 ```
-git add {파일명} 
+git add {파일명}
 ```
 
 변경된 모든 파일 스테이징
 
 ```
-git add * 
+git add *
 ```
 
 커밋
 
 ```
-git commit -m “{변경 내용}” 
+git commit -m “{변경 내용}”
 ```
 
 원격으로 보내기
 
 ```
-git push origin master 
+git push origin master
 ```
 
 원격저장소 추가
 
 ```
-git remote add origin {원격서버주소} 
+git remote add origin {원격서버주소}
 ```
 
 참고 페이지
@@ -72,6 +71,153 @@ git remote add origin {원격서버주소}
 - git 간편 안내서: http://rogerdudler.github.com/git-guide/index.ko.html
 - 한장으로 핵심 기능만: http://rogerdudler.github.com/git-guide/files/git_cheat_sheet.pdf
 
+## Add, Commit, Push 취소
+
+# add 취소
+
+```
+
+// 모든 파일이 Staged 상태로 바뀐다.
+$ git add *
+
+// 파일들의 상태를 확인한다.
+$ git status
+On branch master
+Changes to be committed:
+(use "git reset HEAD <file>..." to unstage)
+  renamed:    README.md -> README
+  modified:   CONTRIBUTING.md
+
+// CONTRIBUTING.md 파일을 Unstage로 변경한다.
+$ git reset HEAD CONTRIBUTING.md
+Unstaged changes after reset:
+M	CONTRIBUTING.md
+
+// 파일들의 상태를 확인한다.
+$ git status
+On branch master
+Changes to be committed:
+(use "git reset HEAD <file>..." to unstage)
+  renamed:    README.md -> README
+Changes not staged for commit:
+(use "git add <file>..." to update what will be committed)
+(use "git checkout -- <file>..." to discard changes in working directory)
+  modified:   CONTRIBUTING.md
+
+```
+
+# commit 취소
+
+```
+// commit 목록 확인
+$ git log
+
+// [방법 1] commit을 취소하고 해당 파일들은 staged 상태로 워킹 디렉터리에 보존
+$ git reset --soft HEAD^
+
+// [방법 2] commit을 취소하고 해당 파일들은 unstaged 상태로 워킹 디렉터리에 보존
+$ git reset --mixed HEAD^ // 기본 옵션
+$ git reset HEAD^ // 위와 동일
+$ git reset HEAD~2 // 마지막 2개의 commit을 취소
+
+// [방법 3] commit을 취소하고 해당 파일들은 unstaged 상태로 워킹 디렉터리에서 삭제
+$ git reset --hard HEAD^
+
+```
+
+# commit message 변경하기
+
+```
+
+commit message를 잘못 적은 경우, git commit –amend 명령어를 통해 git commit message를 변경할 수 있다.
+
+$ git commit --amend
+
+```
+
+# TIP git reset 명령은 아래의 옵션과 관련해서 주의하여 사용해야 한다.
+
+```
+-- reset 옵션
+
+–soft : index 보존(add한 상태, staged 상태), 워킹 디렉터리의 파일 보존. 즉 모두 보존.
+–mixed : index 취소(add하기 전 상태, unstaged 상태), 워킹 디렉터리의 파일 보존 (기본 옵션)
+–hard : index 취소(add하기 전 상태, unstaged 상태), 워킹 디렉터리의 파일 삭제. 즉 모두 취소.
+
+
+# TIP - 만약 워킹 디렉터리를 원격 저장소의 마지막 commit 상태로 되돌리고 싶으면, 아래의 명령어를 사용한다.
+단, 이 명령을 사용하면 원격 저장소에 있는 마지막 commit 이후의 워킹 디렉터리와 add했던 파일들이 모두 사라지므로 주의해야 한다.
+
+// 워킹 디렉터리를 원격 저장소의 마지막 commit 상태로 되돌린다.
+$ git reset --hard HEAD
+
+```
+
+# push 취소
+
+```
+1. 워킹 디렉토리에서 commit 되돌린다.
+
+// 가장 최근의 commit을 취소 (기본 옵션: --mixed)
+$ git reset HEAD^
+
+// Reflog(브랜치와 HEAD가 지난 몇 달 동안에 가리켰었던 커밋) 목록 확인
+$ git reflog 또는 $ git log -g
+
+// 원하는 시점으로 워킹 디렉터리를 되돌린다.
+$ git reset HEAD@{number} 또는 $ git reset [commit id]
+
+
+2. 되돌린 상태에서 다시 commit 한다.
+
+$ git commit -m "Write commit messages"
+
+
+3. 원격 저장소에 강제로 push 한다.
+
+$ git push origin [branch name] -f
+
+또는
+
+$ git push origin +[branch name]
+
+// Ex) master branch를 원격 저장소(origin)에 강제로 push
+$ git push origin +master
+
+
+# TIP 경고를 무시하고 강제로 push 하기
+
+[방법 1] -f 옵션
+–force 옵션과 동일하다.
+
+[방법 2] +[branch name]
+해당 branch를 강제로 push한다.
+
+```
+
+# untracked 파일 삭제하기
+
+```
+git clean 명령은 추적 중이지 않은 파일만 지우는 게 기본 동작이다.
+즉, .gitignore 에 명시하여 무시되는 파일은 지우지 않는다.
+
+$ git clean -f // 디렉터리를 제외한 파일들만 삭제
+$ git clean -f -d // 디렉터리까지 삭제
+$ git clean -f -d -x // 무시된 파일까지 삭제
+
+# TIP option
+
+-d 옵션
+디렉터리까지 지우는 것
+
+-x 옵션
+무시된 파일(.DS_Store나 .gitignore에 등록한 확장자 파일들)까지 모두 지우는 것
+Ex) .o 파일 같은 빌드 파일까지도 지울 수 있다.
+
+-n 옵션
+가상으로 실행해보고 어떤 파일들이 지워질지 알려주는 것
+
+```
 
 ## Commit
 
@@ -110,7 +256,6 @@ $ git reset --hard HEAD // 마지막 커밋 상태로 되돌림
 $ git reset HEAD * // 스테이징을 언스테이징으로 변경, ref
 ```
 
-
 ## Branch
 
 master 브랜치를 특정 커밋으로 옮기기
@@ -126,7 +271,7 @@ git merge better_branch            # fast-forward master up to the merge
 
 ```
 $ git branch // 로컬
-$ git branch -r // 리모트 
+$ git branch -r // 리모트
 $ git branch -a // 로컬, 리모트 포함된 모든 브랜치 보기
 ```
 
@@ -164,9 +309,7 @@ $ git checkout -t origin/{가져올 브랜치명} // ref
 $ git branch -m {new name} // ref
 ```
 
-
 ## Tag
-
 
 태그 생성
 
@@ -190,8 +333,7 @@ git push origin {tag name}
 git push --tags
 ```
 
-
-## 기타 
+## 기타
 
 파일 삭제
 
@@ -257,6 +399,5 @@ git config receive.denynonfastforwards false
   lg = log --graph --abbrev-commit --decorate --format=format:'%C(cyan)%h%C(reset) - %C(green)(%ar)%C(reset)  %C(white)%s%C(reset) %C(dim white)- %an%C(reset)%C(yellow)%d%C(reset)' --all
   ad = add
   tg = tag
-  df = diff 
+  df = diff
 ```
-
